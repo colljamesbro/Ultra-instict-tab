@@ -3,7 +3,6 @@ local Players = game:GetService("Players")
 local Player = Players.LocalPlayer
 local Character = Player.Character or Player.CharacterAdded:Wait()
 local Mouse = Player:GetMouse()
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Teams = game:GetService("Teams")
 local PlayerGui = Player:WaitForChild("PlayerGui")
 
@@ -11,13 +10,98 @@ local PlayerGui = Player:WaitForChild("PlayerGui")
 local screenGui = Instance.new("ScreenGui")
 screenGui.Parent = PlayerGui
 
--- Background setup
+-- Background setup using provided decal
 local background = Instance.new("ImageLabel")
 background.Size = UDim2.new(1, 0, 1, 0)
 background.Image = "rbxassetid://114827941861763"
 background.Parent = screenGui
 
--- Create the password box
+-- Create the big blue "J" label
+local bigJLabel = Instance.new("TextLabel")
+bigJLabel.Size = UDim2.new(0, 200, 0, 100)
+bigJLabel.Position = UDim2.new(0.5, -100, 0, 20)
+bigJLabel.Text = "J"
+bigJLabel.TextColor3 = Color3.fromRGB(0, 0, 255)  -- Blue color
+bigJLabel.TextSize = 72
+bigJLabel.TextScaled = true
+bigJLabel.BackgroundTransparency = 1
+bigJLabel.Parent = screenGui
+
+-- Store the password state
+local passwordCorrect = false
+local teleportEnabled = false
+
+-- Function to teleport behind a player
+local function teleportBehind(player)
+    if teleportEnabled and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+        local targetPosition = player.Character.HumanoidRootPart.Position
+        local newPosition = targetPosition - (player.Character.HumanoidRootPart.CFrame.LookVector * 5)
+        Character:SetPrimaryPartCFrame(CFrame.new(newPosition))
+    end
+end
+
+-- ESP setup for "Inmates" team players
+local function setupESP(player)
+    if player.Team and player.Team.Name == "Inmates" then
+        local espPart = Instance.new("Part")
+        espPart.Size = Vector3.new(2, 2, 2)
+        espPart.Anchored = true
+        espPart.CanCollide = false
+        espPart.BrickColor = BrickColor.new("Bright red")
+        espPart.Parent = player.Character
+        espPart.Position = player.Character.HumanoidRootPart.Position
+        espPart.Name = "ESPPart"
+        local billboardGui = Instance.new("BillboardGui")
+        billboardGui.Parent = espPart
+        billboardGui.Size = UDim2.new(0, 200, 0, 50)
+        billboardGui.Adornee = espPart
+        local label = Instance.new("TextLabel")
+        label.Size = UDim2.new(1, 0, 1, 0)
+        label.Text = player.Name
+        label.TextColor3 = Color3.fromRGB(255, 255, 255)
+        label.TextSize = 14
+        label.Parent = billboardGui
+    end
+end
+
+-- Function to check if the player has been hit
+Mouse.Button1Down:Connect(function()
+    -- If teleport is enabled, teleport behind the clicked player
+    if passwordCorrect and teleportEnabled then
+        local target = Mouse.Target
+        if target and target.Parent then
+            local player = Players:GetPlayerFromCharacter(target.Parent)
+            if player then
+                teleportBehind(player)
+            end
+        end
+    end
+end)
+
+-- Check password and enable teleportation
+local function checkPassword()
+    -- The password is hardcoded for simplicity
+    local password = "Colljamesbro"
+    if Player.Name == password then
+        passwordCorrect = true
+        teleportEnabled = true
+    else
+        passwordCorrect = false
+    end
+end
+
+-- Lock to Inmates team (auto-lock logic)
+local function lockToInmates()
+    while true do
+        wait(1)  -- Check every second
+        if Player.Team and Player.Team.Name == "Inmates" then
+            -- Your team-locking logic, if needed
+            print("Locked to 'Inmates' team.")
+        end
+    end
+end
+
+-- Create the password input screen with "J"
 local passwordFrame = Instance.new("Frame")
 passwordFrame.Size = UDim2.new(0, 300, 0, 200)
 passwordFrame.Position = UDim2.new(0.5, -150, 0.5, -100)
@@ -49,101 +133,29 @@ submitButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 submitButton.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
 submitButton.Parent = passwordFrame
 
--- Button to toggle teleportation
-local teleportButton = Instance.new("TextButton")
-teleportButton.Size = UDim2.new(0, 100, 0, 50)
-teleportButton.Position = UDim2.new(0.5, -50, 0.7, 0)
-teleportButton.Text = "Teleport Off"
-teleportButton.TextColor3 = Color3.fromRGB(255, 255, 255)
-teleportButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
-teleportButton.Parent = screenGui
+-- Add the big "J" to password screen as well
+local passwordBigJLabel = bigJLabel:Clone()
+passwordBigJLabel.Position = UDim2.new(0.5, -100, 0, 50)  -- Adjust position on the password frame
+passwordBigJLabel.Parent = passwordFrame
 
-local teleportEnabled = false
-
--- ESP Setup (for Inmates team only)
-local function setupESP(player)
-    if player.Team and player.Team.Name == "Inmates" then
-        local espPart = Instance.new("Part")
-        espPart.Size = Vector3.new(2, 2, 2)
-        espPart.Anchored = true
-        espPart.CanCollide = false
-        espPart.BrickColor = BrickColor.new("Bright red")
-        espPart.Parent = player.Character
-        espPart.Position = player.Character.HumanoidRootPart.Position
-        espPart.Name = "ESPPart"
-        local billboardGui = Instance.new("BillboardGui")
-        billboardGui.Parent = espPart
-        billboardGui.Size = UDim2.new(0, 200, 0, 50)
-        billboardGui.Adornee = espPart
-        local label = Instance.new("TextLabel")
-        label.Size = UDim2.new(1, 0, 1, 0)
-        label.Text = player.Name
-        label.TextColor3 = Color3.fromRGB(255, 255, 255)
-        label.TextSize = 14
-        label.Parent = billboardGui
-    end
-end
-
--- Function to teleport behind someone
-local function teleportBehind(player)
-    if teleportEnabled and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
-        local targetPosition = player.Character.HumanoidRootPart.Position
-        local newPosition = targetPosition - (player.Character.HumanoidRootPart.CFrame.LookVector * 5)
-        Character:SetPrimaryPartCFrame(CFrame.new(newPosition))
-    end
-end
-
--- Check if hit (assuming the hit detection script is handled separately)
-Mouse.Button1Down:Connect(function()
-    if teleportEnabled then
-        teleportBehind(Mouse.Target)
-    end
-end)
-
--- Check password entry
+-- Check password and show the appropriate actions
 submitButton.MouseButton1Click:Connect(function()
     if passwordBox.Text == "Colljamesbro" then
-        passwordFrame.Visible = false
-        teleportButton.Visible = true
+        passwordCorrect = true
+        passwordFrame.Visible = false  -- Hide the password screen once correct
+        bigJLabel.Visible = false  -- Hide the "J" from the main screen after login
     else
         passwordBox.Text = "Wrong Password!"
     end
 end)
 
--- Toggle teleportation
-teleportButton.MouseButton1Click:Connect(function()
-    if teleportEnabled then
-        teleportButton.Text = "Teleport Off"
-        teleportButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
-        teleportEnabled = false
-    else
-        teleportButton.Text = "Teleport On"
-        teleportButton.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
-        teleportEnabled = true
-    end
+-- Start ESP for all players in the game
+Players.PlayerAdded:Connect(function(player)
+    setupESP(player)
 end)
 
--- Lock on team 'Inmates'
-local function lockTeamInmates()
-    local function checkTeam()
-        if Player.Team and Player.Team.Name == "Inmates" then
-            -- Your custom team lock logic can go here.
-            -- For now, it's just showing a message.
-            print("Locked to Inmates team.")
-        end
-    end
-    checkTeam()
-    -- Run lock on Inmates team every second
-    while true do
-        wait(1)
-        checkTeam()
-    end
-end
+-- Run the team lock function
+lockToInmates()
 
--- Start ESP for all players in the game
-for _, player in ipairs(Players:GetPlayers()) do
-    setupESP(player)
-end
-
--- Start checking team lock
-lockTeamInmates()
+-- Run the password check
+checkPassword()
