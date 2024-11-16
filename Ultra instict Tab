@@ -1,0 +1,145 @@
+local Players = game:GetService("Players")
+local LocalPlayer = Players.LocalPlayer
+local UIS = game:GetService("UserInputService")
+
+-- Variables
+local ultraInstinctActive = false
+local password = "Colljamesbro"
+
+-- Create UI
+local screenGui = Instance.new("ScreenGui")
+screenGui.Parent = game:GetService("CoreGui")
+screenGui.Name = "UltraInstinctGui"
+
+-- Password Input Frame
+local passwordFrame = Instance.new("Frame")
+passwordFrame.Parent = screenGui
+passwordFrame.Size = UDim2.new(0, 300, 0, 150)
+passwordFrame.Position = UDim2.new(0.5, -150, 0.5, -75)
+passwordFrame.BackgroundColor3 = Color3.new(0.2, 0.2, 0.2)
+passwordFrame.Visible = true
+
+local passwordLabel = Instance.new("TextLabel")
+passwordLabel.Parent = passwordFrame
+passwordLabel.Size = UDim2.new(1, 0, 0.3, 0)
+passwordLabel.Position = UDim2.new(0, 0, 0, 10)
+passwordLabel.Text = "Enter Password:"
+passwordLabel.TextSize = 20
+passwordLabel.Font = Enum.Font.SourceSans
+passwordLabel.TextColor3 = Color3.new(1, 1, 1)
+passwordLabel.BackgroundTransparency = 1
+
+local passwordInput = Instance.new("TextBox")
+passwordInput.Parent = passwordFrame
+passwordInput.Size = UDim2.new(0.8, 0, 0.2, 0)
+passwordInput.Position = UDim2.new(0.1, 0, 0.4, 0)
+passwordInput.Text = ""
+passwordInput.PlaceholderText = "Enter password here"
+passwordInput.Font = Enum.Font.SourceSans
+passwordInput.TextSize = 18
+passwordInput.TextColor3 = Color3.new(0, 0, 0)
+passwordInput.BackgroundColor3 = Color3.new(1, 1, 1)
+
+local submitButton = Instance.new("TextButton")
+submitButton.Parent = passwordFrame
+submitButton.Size = UDim2.new(0.4, 0, 0.2, 0)
+submitButton.Position = UDim2.new(0.3, 0, 0.7, 0)
+submitButton.Text = "Submit"
+submitButton.Font = Enum.Font.SourceSans
+submitButton.TextSize = 18
+submitButton.TextColor3 = Color3.new(1, 1, 1)
+submitButton.BackgroundColor3 = Color3.new(0.3, 0.3, 0.3)
+
+-- Side Tab
+local sideTab = Instance.new("Frame")
+sideTab.Parent = screenGui
+sideTab.Size = UDim2.new(0, 200, 0, 100)
+sideTab.Position = UDim2.new(1, -220, 0.5, -50)
+sideTab.BackgroundColor3 = Color3.new(0.2, 0.2, 0.2)
+sideTab.Visible = false
+
+-- Toggle Button Background
+local toggleBackground = Instance.new("Frame")
+toggleBackground.Parent = sideTab
+toggleBackground.Size = UDim2.new(0, 50, 0, 25)
+toggleBackground.Position = UDim2.new(0.5, -25, 0.5, -12.5)
+toggleBackground.BackgroundColor3 = Color3.fromRGB(128, 80, 128)
+toggleBackground.BorderSizePixel = 0
+
+-- Toggle Circle
+local toggleCircle = Instance.new("Frame")
+toggleCircle.Parent = toggleBackground
+toggleCircle.Size = UDim2.new(0, 20, 0, 20)
+toggleCircle.Position = UDim2.new(0, 2.5, 0.5, -10)
+toggleCircle.BackgroundColor3 = Color3.new(1, 0, 0) -- Red (Off)
+toggleCircle.BorderSizePixel = 0
+
+-- Function to Update Toggle Switch
+local function updateToggleSwitch()
+    if ultraInstinctActive then
+        toggleCircle.Position = UDim2.new(1, -22.5, 0.5, -10)
+        toggleCircle.BackgroundColor3 = Color3.new(0, 1, 0) -- Green (On)
+    else
+        toggleCircle.Position = UDim2.new(0, 2.5, 0.5, -10)
+        toggleCircle.BackgroundColor3 = Color3.new(1, 0, 0) -- Red (Off)
+    end
+end
+
+-- Toggle Functionality
+toggleBackground.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+        ultraInstinctActive = not ultraInstinctActive
+        updateToggleSwitch()
+    end
+end)
+
+-- Submit Password
+submitButton.MouseButton1Click:Connect(function()
+    if passwordInput.Text == password then
+        passwordFrame.Visible = false
+        sideTab.Visible = true
+    else
+        passwordLabel.Text = "Incorrect Password! Try Again."
+        passwordLabel.TextColor3 = Color3.new(1, 0, 0)
+    end
+end)
+
+-- Teleport Behind Attacker
+local function teleportBehindAttacker(attacker)
+    if not ultraInstinctActive or not attacker then return end
+
+    local attackerCharacter = attacker.Character
+    local localCharacter = LocalPlayer.Character
+    if attackerCharacter and localCharacter then
+        local attackerRoot = attackerCharacter:FindFirstChild("HumanoidRootPart")
+        local localRoot = localCharacter:FindFirstChild("HumanoidRootPart")
+        if attackerRoot and localRoot then
+            local positionBehind = attackerRoot.Position - attackerRoot.CFrame.LookVector * 5
+            localRoot.CFrame = CFrame.new(positionBehind)
+        end
+    end
+end
+
+-- Monitor Hits
+local function monitorHits()
+    local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+    local humanoid = character:WaitForChild("Humanoid")
+    local currentHealth = humanoid.Health
+
+    humanoid:GetPropertyChangedSignal("Health"):Connect(function()
+        if humanoid.Health < currentHealth then
+            -- Replace this logic with the proper damage source detection for your game
+            local lastAttacker = Players:GetPlayerFromCharacter(humanoid.LastHit)
+            teleportBehindAttacker(lastAttacker)
+        end
+        currentHealth = humanoid.Health
+    end)
+end
+
+LocalPlayer.CharacterAdded:Connect(monitorHits)
+if LocalPlayer.Character then
+    monitorHits()
+end
+
+-- Initialize UI State
+updateToggleSwitch()
