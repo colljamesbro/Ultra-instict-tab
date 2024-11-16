@@ -84,7 +84,7 @@ local function lockToInmates()
     end
 end
 
--- Create the password input screen with no background image
+-- Create the password input screen with no background image and no "J"
 local passwordFrame = Instance.new("Frame")
 passwordFrame.Size = UDim2.new(0, 300, 0, 200)
 passwordFrame.Position = UDim2.new(0.5, -150, 0.5, -100)
