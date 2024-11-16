@@ -6,13 +6,11 @@ local Mouse = Player:GetMouse()
 local Teams = game:GetService("Teams")
 local PlayerGui = Player:WaitForChild("PlayerGui")
 
--- Set up UI
-local screenGui = Instance.new("ScreenGui")
-screenGui.Parent = PlayerGui
-
 -- Store the password state
 local passwordCorrect = false
 local teleportEnabled = false
+local espEnabled = false
+local autoLockEnabled = false
 
 -- Function to teleport behind a player
 local function teleportBehind(player)
@@ -25,7 +23,7 @@ end
 
 -- ESP setup for "Inmates" team players
 local function setupESP(player)
-    if player.Team and player.Team.Name == "Inmates" then
+    if espEnabled and player.Team and player.Team.Name == "Inmates" then
         local espPart = Instance.new("Part")
         espPart.Size = Vector3.new(2, 2, 2)
         espPart.Anchored = true
@@ -49,7 +47,6 @@ end
 
 -- Function to check if the player has been hit
 Mouse.Button1Down:Connect(function()
-    -- If teleport is enabled, teleport behind the clicked player
     if passwordCorrect and teleportEnabled then
         local target = Mouse.Target
         if target and target.Parent then
@@ -63,7 +60,6 @@ end)
 
 -- Check password and enable teleportation
 local function checkPassword()
-    -- The password is hardcoded for simplicity
     local password = "Colljamesbro"
     if Player.Name == password then
         passwordCorrect = true
@@ -77,9 +73,12 @@ end
 local function lockToInmates()
     while true do
         wait(1)  -- Check every second
-        if Player.Team and Player.Team.Name == "Inmates" then
-            -- Your team-locking logic, if needed
-            print("Locked to 'Inmates' team.")
+        if autoLockEnabled and Player.Team and Player.Team.Name ~= "Inmates" then
+            -- Auto-lock logic: change team to "Inmates" if not already in "Inmates" team
+            local team = Teams:FindFirstChild("Inmates")
+            if team then
+                Player.Team = team
+            end
         end
     end
 end
@@ -89,7 +88,7 @@ local passwordFrame = Instance.new("Frame")
 passwordFrame.Size = UDim2.new(0, 300, 0, 200)
 passwordFrame.Position = UDim2.new(0.5, -150, 0.5, -100)
 passwordFrame.BackgroundTransparency = 1  -- No background for the password frame
-passwordFrame.Parent = screenGui
+passwordFrame.Parent = PlayerGui
 
 -- Label for the password input
 local passwordLabel = Instance.new("TextLabel")
@@ -125,6 +124,52 @@ submitButton.MouseButton1Click:Connect(function()
         passwordFrame.Visible = false  -- Hide the password screen once correct
     else
         passwordBox.Text = "Wrong Password!"
+    end
+end)
+
+-- Create the side tab UI
+local sideTab = Instance.new("Frame")
+sideTab.Size = UDim2.new(0, 200, 1, 0)
+sideTab.Position = UDim2.new(1, -200, 0, 0)
+sideTab.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+sideTab.BackgroundTransparency = 0.5
+sideTab.Parent = PlayerGui
+
+-- ESP Toggle button
+local espButton = Instance.new("TextButton")
+espButton.Size = UDim2.new(1, 0, 0.2, 0)
+espButton.Position = UDim2.new(0, 0, 0, 0)
+espButton.Text = "Toggle ESP"
+espButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+espButton.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+espButton.Parent = sideTab
+
+-- Toggle ESP on/off
+espButton.MouseButton1Click:Connect(function()
+    espEnabled = not espEnabled
+    if espEnabled then
+        espButton.Text = "ESP Enabled"
+    else
+        espButton.Text = "Toggle ESP"
+    end
+end)
+
+-- Auto-lock button
+local lockButton = Instance.new("TextButton")
+lockButton.Size = UDim2.new(1, 0, 0.2, 0)
+lockButton.Position = UDim2.new(0, 0, 0.2, 0)
+lockButton.Text = "Toggle Auto-Lock"
+lockButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+lockButton.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+lockButton.Parent = sideTab
+
+-- Toggle Auto-Lock on/off
+lockButton.MouseButton1Click:Connect(function()
+    autoLockEnabled = not autoLockEnabled
+    if autoLockEnabled then
+        lockButton.Text = "Auto-Lock Enabled"
+    else
+        lockButton.Text = "Toggle Auto-Lock"
     end
 end)
 
