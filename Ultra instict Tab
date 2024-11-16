@@ -1,15 +1,16 @@
 local Players = game:GetService("Players")
 local LocalPlayer = Players.LocalPlayer
-local UIS = game:GetService("UserInputService")
 
 -- Variables
 local ultraInstinctActive = false
+local autoLockActive = false
+local espActive = false
 local password = "Colljamesbro"
 
 -- Create UI
 local screenGui = Instance.new("ScreenGui")
 screenGui.Parent = game:GetService("CoreGui")
-screenGui.Name = "UltraInstinctGui"
+screenGui.Name = "FancyUltraInstinctGui"
 
 -- Password Input Frame
 local passwordFrame = Instance.new("Frame")
@@ -53,44 +54,88 @@ submitButton.BackgroundColor3 = Color3.new(0.3, 0.3, 0.3)
 -- Side Tab
 local sideTab = Instance.new("Frame")
 sideTab.Parent = screenGui
-sideTab.Size = UDim2.new(0, 200, 0, 100)
-sideTab.Position = UDim2.new(1, -220, 0.5, -50)
+sideTab.Size = UDim2.new(0, 200, 0, 300)
+sideTab.Position = UDim2.new(1, -220, 0.5, -150)
 sideTab.BackgroundColor3 = Color3.new(0.2, 0.2, 0.2)
 sideTab.Visible = false
 
--- Toggle Button Background
-local toggleBackground = Instance.new("Frame")
-toggleBackground.Parent = sideTab
-toggleBackground.Size = UDim2.new(0, 50, 0, 25)
-toggleBackground.Position = UDim2.new(0.5, -25, 0.5, -12.5)
-toggleBackground.BackgroundColor3 = Color3.fromRGB(128, 80, 128)
-toggleBackground.BorderSizePixel = 0
+-- Blue "J" in the background
+local blueJ = Instance.new("TextLabel")
+blueJ.Parent = sideTab
+blueJ.Size = UDim2.new(1, 0, 1, 0)
+blueJ.Position = UDim2.new(0, 0, 0, 0)
+blueJ.Text = "J"
+blueJ.Font = Enum.Font.SourceSansBold
+blueJ.TextSize = 150
+blueJ.TextColor3 = Color3.new(0, 0.5, 1)
+blueJ.TextTransparency = 0.8
+blueJ.BackgroundTransparency = 1
 
--- Toggle Circle
-local toggleCircle = Instance.new("Frame")
-toggleCircle.Parent = toggleBackground
-toggleCircle.Size = UDim2.new(0, 20, 0, 20)
-toggleCircle.Position = UDim2.new(0, 2.5, 0.5, -10)
-toggleCircle.BackgroundColor3 = Color3.new(1, 0, 0) -- Red (Off)
-toggleCircle.BorderSizePixel = 0
+-- Toggle Buttons
+local buttons = {}
 
--- Function to Update Toggle Switch
-local function updateToggleSwitch()
-    if ultraInstinctActive then
-        toggleCircle.Position = UDim2.new(1, -22.5, 0.5, -10)
-        toggleCircle.BackgroundColor3 = Color3.new(0, 1, 0) -- Green (On)
-    else
-        toggleCircle.Position = UDim2.new(0, 2.5, 0.5, -10)
-        toggleCircle.BackgroundColor3 = Color3.new(1, 0, 0) -- Red (Off)
+local function createButton(name, position, defaultColor)
+    local button = Instance.new("TextButton")
+    button.Parent = sideTab
+    button.Size = UDim2.new(0.8, 0, 0.2, 0)
+    button.Position = UDim2.new(0.1, 0, position, 0)
+    button.Text = name
+    button.Font = Enum.Font.SourceSans
+    button.TextSize = 18
+    button.TextColor3 = Color3.new(1, 1, 1)
+    button.BackgroundColor3 = defaultColor
+    buttons[name] = button
+    return button
+end
+
+local ultraInstinctButton = createButton("Ultra Instinct", 0.1, Color3.new(1, 0, 0))
+local autoLockButton = createButton("Auto Lock", 0.35, Color3.new(1, 0, 0))
+local espButton = createButton("ESP", 0.6, Color3.new(1, 0, 0))
+
+-- Toggle Functions
+local function toggleFeature(button, feature)
+    if feature == "Ultra Instinct" then
+        ultraInstinctActive = not ultraInstinctActive
+        button.BackgroundColor3 = ultraInstinctActive and Color3.new(0, 1, 0) or Color3.new(1, 0, 0)
+    elseif feature == "Auto Lock" then
+        autoLockActive = not autoLockActive
+        button.BackgroundColor3 = autoLockActive and Color3.new(0, 1, 0) or Color3.new(1, 0, 0)
+    elseif feature == "ESP" then
+        espActive = not espActive
+        button.BackgroundColor3 = espActive and Color3.new(0, 1, 0) or Color3.new(1, 0, 0)
+        if espActive then
+            -- ESP logic
+            for _, player in pairs(Players:GetPlayers()) do
+                if player ~= LocalPlayer then
+                    local highlight = Instance.new("Highlight", player.Character or player.CharacterAdded:Wait())
+                    highlight.FillColor = Color3.new(1, 0, 0)
+                end
+            end
+        else
+            -- Remove ESP
+            for _, player in pairs(Players:GetPlayers()) do
+                if player.Character then
+                    for _, child in pairs(player.Character:GetChildren()) do
+                        if child:IsA("Highlight") then
+                            child:Destroy()
+                        end
+                    end
+                end
+            end
+        end
     end
 end
 
--- Toggle Functionality
-toggleBackground.InputBegan:Connect(function(input)
-    if input.UserInputType == Enum.UserInputType.MouseButton1 then
-        ultraInstinctActive = not ultraInstinctActive
-        updateToggleSwitch()
-    end
+ultraInstinctButton.MouseButton1Click:Connect(function()
+    toggleFeature(ultraInstinctButton, "Ultra Instinct")
+end)
+
+autoLockButton.MouseButton1Click:Connect(function()
+    toggleFeature(autoLockButton, "Auto Lock")
+end)
+
+espButton.MouseButton1Click:Connect(function()
+    toggleFeature(espButton, "ESP")
 end)
 
 -- Submit Password
@@ -105,8 +150,10 @@ submitButton.MouseButton1Click:Connect(function()
 end)
 
 -- Teleport Behind Attacker
-local function teleportBehindAttacker(attacker)
-    if not ultraInstinctActive or not attacker then return end
+local function teleportBehind(attacker)
+    if not ultraInstinctActive or not attacker then
+        return
+    end
 
     local attackerCharacter = attacker.Character
     local localCharacter = LocalPlayer.Character
@@ -128,9 +175,8 @@ local function monitorHits()
 
     humanoid:GetPropertyChangedSignal("Health"):Connect(function()
         if humanoid.Health < currentHealth then
-            -- Replace this logic with the proper damage source detection for your game
-            local lastAttacker = Players:GetPlayerFromCharacter(humanoid.LastHit)
-            teleportBehindAttacker(lastAttacker)
+            local lastAttacker = nil -- Replace with logic to detect attacker
+            teleportBehind(lastAttacker)
         end
         currentHealth = humanoid.Health
     end)
@@ -140,6 +186,3 @@ LocalPlayer.CharacterAdded:Connect(monitorHits)
 if LocalPlayer.Character then
     monitorHits()
 end
-
--- Initialize UI State
-updateToggleSwitch()
