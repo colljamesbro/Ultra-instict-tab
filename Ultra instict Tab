@@ -85,11 +85,12 @@ local function lockToTeams()
     end
 end
 
--- Create the password input screen with no background image and no "J"
+-- Create the password input screen
 local passwordFrame = Instance.new("Frame")
 passwordFrame.Size = UDim2.new(0, 300, 0, 200)
 passwordFrame.Position = UDim2.new(0.5, -150, 0.5, -100)
-passwordFrame.BackgroundTransparency = 1  -- No background for the password frame
+passwordFrame.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+passwordFrame.BackgroundTransparency = 0.5
 passwordFrame.Parent = PlayerGui
 
 -- Label for the password input
@@ -129,12 +130,13 @@ submitButton.MouseButton1Click:Connect(function()
     end
 end)
 
--- Create the side tab UI
+-- Create the side tab UI for ESP and Auto-lock
 local sideTab = Instance.new("Frame")
 sideTab.Size = UDim2.new(0, 200, 1, 0)
 sideTab.Position = UDim2.new(1, -200, 0, 0)
 sideTab.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 sideTab.BackgroundTransparency = 0.5
+sideTab.Visible = false -- Initially hidden until password is correct
 sideTab.Parent = PlayerGui
 
 -- ESP Toggle button
