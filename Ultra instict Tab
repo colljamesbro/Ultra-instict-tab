@@ -21,9 +21,9 @@ local function teleportBehind(player)
     end
 end
 
--- ESP setup for "Inmates" team players
+-- ESP setup for "Inmates" and "Criminals" team players
 local function setupESP(player)
-    if espEnabled and player.Team and player.Team.Name == "Inmates" then
+    if espEnabled and player.Team and (player.Team.Name == "Inmates" or player.Team.Name == "Criminals") then
         local espPart = Instance.new("Part")
         espPart.Size = Vector3.new(2, 2, 2)
         espPart.Anchored = true
@@ -69,15 +69,17 @@ local function checkPassword()
     end
 end
 
--- Lock to Inmates team (auto-lock logic)
-local function lockToInmates()
+-- Lock to Inmates or Criminals team (auto-lock logic)
+local function lockToTeams()
     while true do
         wait(1)  -- Check every second
-        if autoLockEnabled and Player.Team and Player.Team.Name ~= "Inmates" then
-            -- Auto-lock logic: change team to "Inmates" if not already in "Inmates" team
-            local team = Teams:FindFirstChild("Inmates")
-            if team then
-                Player.Team = team
+        if autoLockEnabled then
+            if Player.Team.Name ~= "Inmates" and Player.Team.Name ~= "Criminals" then
+                -- Auto-lock logic: change team to "Inmates" or "Criminals" if not already on these teams
+                local team = Teams:FindFirstChild("Inmates") or Teams:FindFirstChild("Criminals")
+                if team then
+                    Player.Team = team
+                end
             end
         end
     end
@@ -179,7 +181,7 @@ Players.PlayerAdded:Connect(function(player)
 end)
 
 -- Run the team lock function
-lockToInmates()
+lockToTeams()
 
 -- Run the password check
 checkPassword()
