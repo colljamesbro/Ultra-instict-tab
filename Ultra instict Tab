@@ -105,10 +105,10 @@ end
 local passwordFrame = Instance.new("Frame")
 passwordFrame.Size = UDim2.new(0, 300, 0, 200)
 passwordFrame.Position = UDim2.new(0.5, -150, 0.5, -100)
-passwordFrame.BackgroundTransparency = 0.5
-passwordFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+passwordFrame.BackgroundTransparency = 1  -- No background for the password frame
 passwordFrame.Parent = screenGui
 
+-- Label for the password input
 local passwordLabel = Instance.new("TextLabel")
 passwordLabel.Size = UDim2.new(1, 0, 0.2, 0)
 passwordLabel.Text = "Enter the password:"
@@ -117,6 +117,7 @@ passwordLabel.TextSize = 18
 passwordLabel.BackgroundTransparency = 1
 passwordLabel.Parent = passwordFrame
 
+-- Textbox to input password
 local passwordBox = Instance.new("TextBox")
 passwordBox.Size = UDim2.new(1, -20, 0.2, 0)
 passwordBox.Position = UDim2.new(0, 10, 0.25, 0)
@@ -125,6 +126,7 @@ passwordBox.TextColor3 = Color3.fromRGB(255, 255, 255)
 passwordBox.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
 passwordBox.Parent = passwordFrame
 
+-- Submit button to check password
 local submitButton = Instance.new("TextButton")
 submitButton.Size = UDim2.new(1, -20, 0.2, 0)
 submitButton.Position = UDim2.new(0, 10, 0.5, 0)
