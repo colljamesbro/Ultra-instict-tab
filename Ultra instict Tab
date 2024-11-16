@@ -1,4 +1,4 @@
--- Get services
+-- Services
 local Players = game:GetService("Players")
 local Player = Players.LocalPlayer
 local Character = Player.Character or Player.CharacterAdded:Wait()
@@ -125,6 +125,8 @@ submitButton.MouseButton1Click:Connect(function()
     if passwordBox.Text == "Colljamesbro" then
         passwordCorrect = true
         passwordFrame.Visible = false  -- Hide the password screen once correct
+        -- Show the side tab after the password is correct
+        sideTab.Visible = true
     else
         passwordBox.Text = "Wrong Password!"
     end
