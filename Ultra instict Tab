@@ -10,23 +10,6 @@ local PlayerGui = Player:WaitForChild("PlayerGui")
 local screenGui = Instance.new("ScreenGui")
 screenGui.Parent = PlayerGui
 
--- Background setup using provided decal
-local background = Instance.new("ImageLabel")
-background.Size = UDim2.new(1, 0, 1, 0)
-background.Image = "rbxassetid://114827941861763"
-background.Parent = screenGui
-
--- Create the big blue "J" label
-local bigJLabel = Instance.new("TextLabel")
-bigJLabel.Size = UDim2.new(0, 200, 0, 100)
-bigJLabel.Position = UDim2.new(0.5, -100, 0, 20)
-bigJLabel.Text = "J"
-bigJLabel.TextColor3 = Color3.fromRGB(0, 0, 255)  -- Blue color
-bigJLabel.TextSize = 72
-bigJLabel.TextScaled = true
-bigJLabel.BackgroundTransparency = 1
-bigJLabel.Parent = screenGui
-
 -- Store the password state
 local passwordCorrect = false
 local teleportEnabled = false
@@ -101,7 +84,7 @@ local function lockToInmates()
     end
 end
 
--- Create the password input screen with "J"
+-- Create the password input screen with no background image
 local passwordFrame = Instance.new("Frame")
 passwordFrame.Size = UDim2.new(0, 300, 0, 200)
 passwordFrame.Position = UDim2.new(0.5, -150, 0.5, -100)
@@ -135,17 +118,11 @@ submitButton.TextColor3 = Color3.fromRGB(255, 255, 255)
 submitButton.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
 submitButton.Parent = passwordFrame
 
--- Add the big "J" to password screen as well
-local passwordBigJLabel = bigJLabel:Clone()
-passwordBigJLabel.Position = UDim2.new(0.5, -100, 0, 50)  -- Adjust position on the password frame
-passwordBigJLabel.Parent = passwordFrame
-
 -- Check password and show the appropriate actions
 submitButton.MouseButton1Click:Connect(function()
     if passwordBox.Text == "Colljamesbro" then
         passwordCorrect = true
         passwordFrame.Visible = false  -- Hide the password screen once correct
-        bigJLabel.Visible = false  -- Hide the "J" from the main screen after login
     else
         passwordBox.Text = "Wrong Password!"
     end
