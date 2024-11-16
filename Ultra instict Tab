@@ -1,188 +1,149 @@
+-- Get services
 local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
+local Player = Players.LocalPlayer
+local Character = Player.Character or Player.CharacterAdded:Wait()
+local Mouse = Player:GetMouse()
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Teams = game:GetService("Teams")
+local PlayerGui = Player:WaitForChild("PlayerGui")
 
--- Variables
-local ultraInstinctActive = false
-local autoLockActive = false
-local espActive = false
-local password = "Colljamesbro"
-
--- Create UI
+-- Set up UI
 local screenGui = Instance.new("ScreenGui")
-screenGui.Parent = game:GetService("CoreGui")
-screenGui.Name = "FancyUltraInstinctGui"
+screenGui.Parent = PlayerGui
 
--- Password Input Frame
+-- Background setup
+local background = Instance.new("ImageLabel")
+background.Size = UDim2.new(1, 0, 1, 0)
+background.Image = "rbxassetid://114827941861763"
+background.Parent = screenGui
+
+-- Create the password box
 local passwordFrame = Instance.new("Frame")
+passwordFrame.Size = UDim2.new(0, 300, 0, 200)
+passwordFrame.Position = UDim2.new(0.5, -150, 0.5, -100)
+passwordFrame.BackgroundTransparency = 0.5
+passwordFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
 passwordFrame.Parent = screenGui
-passwordFrame.Size = UDim2.new(0, 300, 0, 150)
-passwordFrame.Position = UDim2.new(0.5, -150, 0.5, -75)
-passwordFrame.BackgroundColor3 = Color3.new(0.2, 0.2, 0.2)
-passwordFrame.Visible = true
 
 local passwordLabel = Instance.new("TextLabel")
-passwordLabel.Parent = passwordFrame
-passwordLabel.Size = UDim2.new(1, 0, 0.3, 0)
-passwordLabel.Position = UDim2.new(0, 0, 0, 10)
-passwordLabel.Text = "Enter Password:"
-passwordLabel.TextSize = 20
-passwordLabel.Font = Enum.Font.SourceSans
-passwordLabel.TextColor3 = Color3.new(1, 1, 1)
+passwordLabel.Size = UDim2.new(1, 0, 0.2, 0)
+passwordLabel.Text = "Enter the password:"
+passwordLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+passwordLabel.TextSize = 18
 passwordLabel.BackgroundTransparency = 1
+passwordLabel.Parent = passwordFrame
 
-local passwordInput = Instance.new("TextBox")
-passwordInput.Parent = passwordFrame
-passwordInput.Size = UDim2.new(0.8, 0, 0.2, 0)
-passwordInput.Position = UDim2.new(0.1, 0, 0.4, 0)
-passwordInput.Text = ""
-passwordInput.PlaceholderText = "Enter password here"
-passwordInput.Font = Enum.Font.SourceSans
-passwordInput.TextSize = 18
-passwordInput.TextColor3 = Color3.new(0, 0, 0)
-passwordInput.BackgroundColor3 = Color3.new(1, 1, 1)
+local passwordBox = Instance.new("TextBox")
+passwordBox.Size = UDim2.new(1, -20, 0.2, 0)
+passwordBox.Position = UDim2.new(0, 10, 0.25, 0)
+passwordBox.PlaceholderText = "Password"
+passwordBox.TextColor3 = Color3.fromRGB(255, 255, 255)
+passwordBox.BackgroundColor3 = Color3.fromRGB(50, 50, 50)
+passwordBox.Parent = passwordFrame
 
 local submitButton = Instance.new("TextButton")
-submitButton.Parent = passwordFrame
-submitButton.Size = UDim2.new(0.4, 0, 0.2, 0)
-submitButton.Position = UDim2.new(0.3, 0, 0.7, 0)
+submitButton.Size = UDim2.new(1, -20, 0.2, 0)
+submitButton.Position = UDim2.new(0, 10, 0.5, 0)
 submitButton.Text = "Submit"
-submitButton.Font = Enum.Font.SourceSans
-submitButton.TextSize = 18
-submitButton.TextColor3 = Color3.new(1, 1, 1)
-submitButton.BackgroundColor3 = Color3.new(0.3, 0.3, 0.3)
+submitButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+submitButton.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+submitButton.Parent = passwordFrame
 
--- Side Tab
-local sideTab = Instance.new("Frame")
-sideTab.Parent = screenGui
-sideTab.Size = UDim2.new(0, 200, 0, 300)
-sideTab.Position = UDim2.new(1, -220, 0.5, -150)
-sideTab.BackgroundColor3 = Color3.new(0.2, 0.2, 0.2)
-sideTab.Visible = false
+-- Button to toggle teleportation
+local teleportButton = Instance.new("TextButton")
+teleportButton.Size = UDim2.new(0, 100, 0, 50)
+teleportButton.Position = UDim2.new(0.5, -50, 0.7, 0)
+teleportButton.Text = "Teleport Off"
+teleportButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+teleportButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+teleportButton.Parent = screenGui
 
--- Blue "J" in the background
-local blueJ = Instance.new("TextLabel")
-blueJ.Parent = sideTab
-blueJ.Size = UDim2.new(1, 0, 1, 0)
-blueJ.Position = UDim2.new(0, 0, 0, 0)
-blueJ.Text = "J"
-blueJ.Font = Enum.Font.SourceSansBold
-blueJ.TextSize = 150
-blueJ.TextColor3 = Color3.new(0, 0.5, 1)
-blueJ.TextTransparency = 0.8
-blueJ.BackgroundTransparency = 1
+local teleportEnabled = false
 
--- Toggle Buttons
-local buttons = {}
-
-local function createButton(name, position, defaultColor)
-    local button = Instance.new("TextButton")
-    button.Parent = sideTab
-    button.Size = UDim2.new(0.8, 0, 0.2, 0)
-    button.Position = UDim2.new(0.1, 0, position, 0)
-    button.Text = name
-    button.Font = Enum.Font.SourceSans
-    button.TextSize = 18
-    button.TextColor3 = Color3.new(1, 1, 1)
-    button.BackgroundColor3 = defaultColor
-    buttons[name] = button
-    return button
-end
-
-local ultraInstinctButton = createButton("Ultra Instinct", 0.1, Color3.new(1, 0, 0))
-local autoLockButton = createButton("Auto Lock", 0.35, Color3.new(1, 0, 0))
-local espButton = createButton("ESP", 0.6, Color3.new(1, 0, 0))
-
--- Toggle Functions
-local function toggleFeature(button, feature)
-    if feature == "Ultra Instinct" then
-        ultraInstinctActive = not ultraInstinctActive
-        button.BackgroundColor3 = ultraInstinctActive and Color3.new(0, 1, 0) or Color3.new(1, 0, 0)
-    elseif feature == "Auto Lock" then
-        autoLockActive = not autoLockActive
-        button.BackgroundColor3 = autoLockActive and Color3.new(0, 1, 0) or Color3.new(1, 0, 0)
-    elseif feature == "ESP" then
-        espActive = not espActive
-        button.BackgroundColor3 = espActive and Color3.new(0, 1, 0) or Color3.new(1, 0, 0)
-        if espActive then
-            -- ESP logic
-            for _, player in pairs(Players:GetPlayers()) do
-                if player ~= LocalPlayer then
-                    local highlight = Instance.new("Highlight", player.Character or player.CharacterAdded:Wait())
-                    highlight.FillColor = Color3.new(1, 0, 0)
-                end
-            end
-        else
-            -- Remove ESP
-            for _, player in pairs(Players:GetPlayers()) do
-                if player.Character then
-                    for _, child in pairs(player.Character:GetChildren()) do
-                        if child:IsA("Highlight") then
-                            child:Destroy()
-                        end
-                    end
-                end
-            end
-        end
+-- ESP Setup (for Inmates team only)
+local function setupESP(player)
+    if player.Team and player.Team.Name == "Inmates" then
+        local espPart = Instance.new("Part")
+        espPart.Size = Vector3.new(2, 2, 2)
+        espPart.Anchored = true
+        espPart.CanCollide = false
+        espPart.BrickColor = BrickColor.new("Bright red")
+        espPart.Parent = player.Character
+        espPart.Position = player.Character.HumanoidRootPart.Position
+        espPart.Name = "ESPPart"
+        local billboardGui = Instance.new("BillboardGui")
+        billboardGui.Parent = espPart
+        billboardGui.Size = UDim2.new(0, 200, 0, 50)
+        billboardGui.Adornee = espPart
+        local label = Instance.new("TextLabel")
+        label.Size = UDim2.new(1, 0, 1, 0)
+        label.Text = player.Name
+        label.TextColor3 = Color3.fromRGB(255, 255, 255)
+        label.TextSize = 14
+        label.Parent = billboardGui
     end
 end
 
-ultraInstinctButton.MouseButton1Click:Connect(function()
-    toggleFeature(ultraInstinctButton, "Ultra Instinct")
+-- Function to teleport behind someone
+local function teleportBehind(player)
+    if teleportEnabled and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+        local targetPosition = player.Character.HumanoidRootPart.Position
+        local newPosition = targetPosition - (player.Character.HumanoidRootPart.CFrame.LookVector * 5)
+        Character:SetPrimaryPartCFrame(CFrame.new(newPosition))
+    end
+end
+
+-- Check if hit (assuming the hit detection script is handled separately)
+Mouse.Button1Down:Connect(function()
+    if teleportEnabled then
+        teleportBehind(Mouse.Target)
+    end
 end)
 
-autoLockButton.MouseButton1Click:Connect(function()
-    toggleFeature(autoLockButton, "Auto Lock")
-end)
-
-espButton.MouseButton1Click:Connect(function()
-    toggleFeature(espButton, "ESP")
-end)
-
--- Submit Password
+-- Check password entry
 submitButton.MouseButton1Click:Connect(function()
-    if passwordInput.Text == password then
+    if passwordBox.Text == "Colljamesbro" then
         passwordFrame.Visible = false
-        sideTab.Visible = true
+        teleportButton.Visible = true
     else
-        passwordLabel.Text = "Incorrect Password! Try Again."
-        passwordLabel.TextColor3 = Color3.new(1, 0, 0)
+        passwordBox.Text = "Wrong Password!"
     end
 end)
 
--- Teleport Behind Attacker
-local function teleportBehind(attacker)
-    if not ultraInstinctActive or not attacker then
-        return
+-- Toggle teleportation
+teleportButton.MouseButton1Click:Connect(function()
+    if teleportEnabled then
+        teleportButton.Text = "Teleport Off"
+        teleportButton.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
+        teleportEnabled = false
+    else
+        teleportButton.Text = "Teleport On"
+        teleportButton.BackgroundColor3 = Color3.fromRGB(0, 255, 0)
+        teleportEnabled = true
     end
+end)
 
-    local attackerCharacter = attacker.Character
-    local localCharacter = LocalPlayer.Character
-    if attackerCharacter and localCharacter then
-        local attackerRoot = attackerCharacter:FindFirstChild("HumanoidRootPart")
-        local localRoot = localCharacter:FindFirstChild("HumanoidRootPart")
-        if attackerRoot and localRoot then
-            local positionBehind = attackerRoot.Position - attackerRoot.CFrame.LookVector * 5
-            localRoot.CFrame = CFrame.new(positionBehind)
+-- Lock on team 'Inmates'
+local function lockTeamInmates()
+    local function checkTeam()
+        if Player.Team and Player.Team.Name == "Inmates" then
+            -- Your custom team lock logic can go here.
+            -- For now, it's just showing a message.
+            print("Locked to Inmates team.")
         end
     end
+    checkTeam()
+    -- Run lock on Inmates team every second
+    while true do
+        wait(1)
+        checkTeam()
+    end
 end
 
--- Monitor Hits
-local function monitorHits()
-    local character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
-    local humanoid = character:WaitForChild("Humanoid")
-    local currentHealth = humanoid.Health
-
-    humanoid:GetPropertyChangedSignal("Health"):Connect(function()
-        if humanoid.Health < currentHealth then
-            local lastAttacker = nil -- Replace with logic to detect attacker
-            teleportBehind(lastAttacker)
-        end
-        currentHealth = humanoid.Health
-    end)
+-- Start ESP for all players in the game
+for _, player in ipairs(Players:GetPlayers()) do
+    setupESP(player)
 end
 
-LocalPlayer.CharacterAdded:Connect(monitorHits)
-if LocalPlayer.Character then
-    monitorHits()
-end
+-- Start checking team lock
+lockTeamInmates()
